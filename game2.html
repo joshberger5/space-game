@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<body onload="createDivs()" onkeydown="move(event)" onkeyup="stop()">
+
+<div id="game">
+ <div id="player"></div>
+</div>
+<div id="scorekeeper">0</div>
+<div id="pause" onclick="showmenu()">=</div>
+<div id="menu" onclick="hidemenu()">
+Instructions:<br>
+Arrows = Move (Up, Down, Left, Right)<br>
+Destroy all the blue to win!<br>
+Don't let the yellow destroy you!<br>
+Click to exit
+</div>
+<div id="flipper" onclick="flip()">FLIP</div>
+<a id="backlevel" href="game.html">LAST LEVEL</a>
+<a id="nextlevel">NEXT LEVEL</a>
+<div id="level">LEVEL 2</div>
+
+<script>
+var player = document.getElementById("player");
+var game = document.getElementById("game");
+var bad = document.getElementsByClassName("bad");
+var collidable = document.getElementsByClassName("collidable");
+var scorekeeper = document.getElementById("scorekeeper");
+var menu = document.getElementById("menu");
+var nextlevel = document.getElementById("nextlevel");
+var level = document.getElementById("level");
+var badmover = 0;
+var moveokl = 0;
+var moveokr = 0;
+var moveoku = 0;
+var moveokd = 0;
+var score = 0;
+var key;
+setInterval(actuallymove,1);
+setInterval(badmove,1);
+setInterval(goodcollision,1);
+setInterval(badcollision,1);
+setTimeout(function(){menu.style.top="0px";},500);
+var flipped = 0;
+
+function flip() {
+if (flipped == 0) {
+game.style.transform = "rotate(-90deg)";
+game.style.boxShadow = "-25px -15px 8px rgba(0,0,0,0.3)";
+flipped = 1;
+}
+else if (flipped == 1) {
+game.style.transform = "rotate(0deg)";
+game.style.boxShadow = "-15px 25px 8px rgba(0,0,0,0.3)";
+flipped = 0;
+}
+}
+
+function createDivs() {
+level.style.left = (window.innerWidth-level.offsetWidth)/2+"px";
+game.style.top = (window.innerHeight-game.offsetHeight)/2+"px";
+game.style.left = (window.innerWidth-game.offsetWidth)/2+"px";
+for (var i = 0; i < 10; i++) {
+ var bblock = document.createElement("div");
+ bblock.id = "block";
+ bblock.className = "collidable";
+ game.appendChild(bblock);
+ collidable[i].style.top = Math.floor(Math.random() * 360) + 20 + "px";
+ collidable[i].style.left = Math.floor(Math.random() * 460) + 20 + "px";
+}
+for (var i = 0; i < 5; i++) {
+ var bblock = document.createElement("div");
+ bblock.id = "badguy";
+ bblock.className = "bad";
+ game.appendChild(bblock);
+ bad[i].style.top = ((game.offsetHeight-50)/5)*i + 50 + "px";
+}
+}
+
+function move(event) {
+moveokl = 1;
+moveokr = 1;
+moveoku = 1;
+moveokd = 1;
+key = event.keyCode;
+}
+
+function stop() {
+moveokl = 0;
+moveokr = 0;
+moveoku = 0;
+moveokd = 0;
+}
+
+function actuallymove() {
+ if (flipped == 0 && moveokr == 1 && key == 37 && player.offsetLeft > 0) {
+ player.style.left = player.offsetLeft - 1 + "px";
+ }
+ if (flipped == 0 && moveoku == 1 && key == 38 && player.offsetTop > 0) {
+ player.style.top = player.offsetTop - 1 + "px";
+ }
+ if (flipped == 0 && moveokl == 1 && key == 39 && player.offsetLeft < game.offsetWidth - player.offsetWidth) {
+ player.style.left = player.offsetLeft + 1 + "px";
+ }
+ if (flipped == 0 && moveokd == 1 && key == 40 && player.offsetTop < game.offsetHeight - player.offsetHeight) {
+ player.style.top = player.offsetTop + 1 + "px";
+ }
+ if (flipped == 1 && moveokr == 1 && key == 40 && player.offsetLeft > 0) {
+ player.style.left = player.offsetLeft - 1 + "px";
+ }
+ if (flipped == 1 && moveoku == 1 && key == 37 && player.offsetTop > 0) {
+ player.style.top = player.offsetTop - 1 + "px";
+ }
+ if (flipped == 1 && moveokl == 1 && key == 38 && player.offsetLeft < game.offsetWidth - player.offsetWidth) {
+ player.style.left = player.offsetLeft + 1 + "px";
+ }
+ if (flipped == 1 && moveokd == 1 && key == 39 && player.offsetTop < game.offsetHeight - player.offsetHeight) {
+ player.style.top = player.offsetTop + 1 + "px";
+ }
+}
+
+function goodcollision() {
+for (var i = 0; i < collidable.length; i++) {
+if (player.offsetLeft < collidable[i].offsetLeft + collidable[i].offsetWidth &&
+   player.offsetLeft + player.offsetWidth > collidable[i].offsetLeft &&
+   player.offsetTop < collidable[i].offsetTop + collidable[i].offsetHeight &&
+   player.offsetTop + player.offsetHeight > collidable[i].offsetTop) {
+   collidable[i].remove();
+   score += 10;
+   scorekeeper.innerHTML = score;
+   if (score == 100) {
+   nextlevel.style.textDecoration = "none";
+   nextlevel.href = "game3.html";
+   scorekeeper.innerHTML = "YOU WIN!!!";
+   // document.body.style.animation = "dance 2s linear infinite";
+   // player.style.animation = "dance 2s linear infinite";
+   // menu.style.animation = "dance 2s linear infinite";
+   // if (flipped == 0) {
+   // game.style.animation = "dance2 0.5s linear infinite";
+   // }
+   document.getElementById("flipper").style.left = "-150px";
+   menu.style.top = "-150px";
+   for (var b = 4; b >= 0; b--) {
+   bad[b].remove();
+   }
+   }
+}   
+}
+}
+
+function badcollision() {
+for (var i = 0; i < bad.length; i++) {
+if (player.offsetLeft < bad[i].offsetLeft + bad[i].offsetWidth &&
+   player.offsetLeft + player.offsetWidth > bad[i].offsetLeft &&
+   player.offsetTop < bad[i].offsetTop + bad[i].offsetHeight &&
+   player.offsetTop + player.offsetHeight > bad[i].offsetTop) {
+   player.remove();
+   scorekeeper.innerHTML = "YOU LOSE!!!";
+   document.body.style.background = "red";
+   menu.style.background = "red";
+   scorekeeper.style.animation = "dance2 0.5s linear infinite";
+}   
+}
+}
+
+function badmove() {
+for (var i = 0; i < bad.length; i++) {
+if (badmover == 0) {
+bad[i].style.left = bad[i].offsetLeft + 1 + "px";
+ if (bad[i].offsetLeft == game.offsetWidth - bad[i].offsetWidth) {
+ badmover = 1;
+ }
+}
+if (badmover == 1) {
+bad[i].style.left = bad[i].offsetLeft - 1 + "px";
+ if (bad[i].offsetLeft == 0) {
+ badmover = 0;
+ }
+}
+}
+}
+
+function showmenu() {
+menu.style.top = "0px";
+}
+
+function hidemenu() {
+menu.style.top = "-150px";
+}
+</script>
+<style>
+html, body {
+font-family: consolas;
+font-weight: bold;
+overflow: hidden;
+cursor: default;
+font-size: 20px;
+height: 100%;
+width: 100%;
+margin: 0;
+}
+#game {
+background: url("https://t3.ftcdn.net/jpg/02/04/57/44/360_F_204574498_8pjn7DPA0LouG2MlaQCcZOkLvsDPfMId.jpg");
+box-shadow: -15px 25px 8px rgba(0,0,0,0.3);
+background-size: contain;
+position: fixed;
+height: 400px;
+width: 500px;
+left: 0px;
+top: 0px;
+}
+#player {
+position: absolute;
+background: #fff;
+height: 20px;
+width: 20px;
+left: 0px;
+top: 0px;
+}
+#badguy {
+position: absolute;
+background: yellow;
+height: 20px;
+width: 20px;
+z-index: 2;
+left: 50px;
+top: 50px;
+}
+#block {
+background: #47edff;
+position: absolute;
+height: 20px;
+width: 20px;
+}
+#scorekeeper {
+font-family: consolas;
+font-weight: bold;
+text-align: right;
+font-size: 20px;
+position: fixed;
+padding: 5px;
+right: 2px;
+margin: 0;
+top: 0px;
+}
+#pause {
+transform: rotate(90deg);
+font-family: consolas;
+font-weight: bold;
+font-size: 35px;
+position: fixed;
+left: 8px;
+margin: 0;
+top: -5px;
+}
+#menu {
+font-family: consolas;
+transition: top 1s;
+font-weight: bold;
+background: #fff;
+font-size: 18px;
+position: fixed;
+padding:  5px;
+top: -150px;
+left: 0px;
+}
+#flipper {
+font-family: consolas;
+transition: left 1s;
+font-weight: bold;
+cursor: pointer;
+font-size: 20px;
+position: fixed;
+bottom: 0px;
+left: 4px;
+margin: 0;
+}
+@keyframes dance {
+0% {background: red;}
+14% {background: #ff8d00;}
+28% {background: #fff708;}
+42% {background: #1bf71f;}
+56% {background: #1f9cff;}
+70% {background: #7200c5;}
+84% {background: #ff0aff;}
+100% {background: red;}
+}
+@keyframes dance2 {
+50% {transform: scale(1.1);}
+100% {transform: scale(1);}
+}
+#backlevel {
+text-decoration: none;
+position: fixed;
+padding: 2px;
+color: #000;
+bottom: 25px;
+right: 0px;
+}
+#nextlevel {
+text-decoration: line-through;
+position: fixed;
+padding: 2px;
+color: #000;
+bottom: 0px;
+right: 0px;
+}
+#level {
+position: fixed;
+left: 50%;
+top: 0px;
+}
+</style>
+</body>
+</html>
